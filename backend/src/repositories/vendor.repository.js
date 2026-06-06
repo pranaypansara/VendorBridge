@@ -8,8 +8,8 @@ function list() {
   return db.query('SELECT * FROM vendors ORDER BY created_at DESC, id DESC');
 }
 
-function create(vendor) {
-  return db.query(
+function create(vendor, client = db) {
+  return client.query(
     `INSERT INTO vendors (company_name, gst_number, category, contact_person, email, phone, status)
      VALUES ($1, $2, $3, $4, $5, $6, $7)
      RETURNING *`,
@@ -17,8 +17,8 @@ function create(vendor) {
   );
 }
 
-function update(id, vendor) {
-  return db.query(
+function update(id, vendor, client = db) {
+  return client.query(
     `UPDATE vendors
      SET company_name = COALESCE($1, company_name),
          gst_number = COALESCE($2, gst_number),
@@ -48,4 +48,8 @@ function findUserForVendor(vendorId, client = db) {
   );
 }
 
-module.exports = { count, list, create, update, findById, findByUserEmail, findUserForVendor };
+function remove(id, client = db) {
+  return client.query('DELETE FROM vendors WHERE id = $1 RETURNING *', [id]);
+}
+
+module.exports = { count, list, create, update, findById, findByUserEmail, findUserForVendor, remove };

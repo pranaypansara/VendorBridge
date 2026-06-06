@@ -81,4 +81,14 @@ async function login(payload) {
   };
 }
 
-module.exports = { register, login };
+async function me(userId) {
+  const result = await userRepository.findById(userId);
+  if (!result.rows.length) {
+    const error = new Error('User not found.');
+    error.status = 404;
+    throw error;
+  }
+  return result.rows[0];
+}
+
+module.exports = { register, login, me };

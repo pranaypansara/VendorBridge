@@ -10,6 +10,7 @@ const router = express.Router();
 router.get('/', authenticateToken, asyncHandler(rfqController.list));
 router.get('/:id', authenticateToken, asyncHandler(rfqController.details));
 router.post('/', authenticateToken, requireRoles('Admin', 'Procurement Officer'), asyncHandler(rfqController.create));
+router.patch('/:id/status', authenticateToken, requireRoles('Admin', 'Procurement Officer'), asyncHandler(rfqController.updateStatus));
 router.post('/:id/quotations', authenticateToken, requireRoles('Admin', 'Vendor'), asyncHandler(quotationController.submit));
 
 module.exports = router;

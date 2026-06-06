@@ -35,6 +35,10 @@ function compareByRfq(rfqId) {
   );
 }
 
+function findById(id) {
+  return db.query('SELECT * FROM quotations WHERE id = $1', [id]);
+}
+
 function updateStatus(id, status, client = db) {
   return client.query('UPDATE quotations SET status = $1 WHERE id = $2 RETURNING *', [status, id]);
 }
@@ -47,4 +51,4 @@ function copyItemsToPurchaseOrder(client, poNumber, quotationId) {
   );
 }
 
-module.exports = { count, create, createItem, compareByRfq, updateStatus, copyItemsToPurchaseOrder };
+module.exports = { count, create, createItem, compareByRfq, findById, updateStatus, copyItemsToPurchaseOrder };

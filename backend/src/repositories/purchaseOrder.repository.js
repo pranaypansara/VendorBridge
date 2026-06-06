@@ -7,7 +7,8 @@ function count() {
 function create(client, purchaseOrder) {
   return client.query(
     `INSERT INTO purchase_orders (po_number, quotation_id, vendor_id, amount, status)
-     VALUES ($1, $2, $3, $4, 'Issued')`,
+     VALUES ($1, $2, $3, $4, 'Issued')
+     RETURNING *`,
     [purchaseOrder.po_number, purchaseOrder.quotation_id, purchaseOrder.vendor_id, purchaseOrder.amount]
   );
 }
@@ -27,4 +28,8 @@ function findByNumber(poNumber) {
   return db.query('SELECT * FROM purchase_orders WHERE po_number = $1', [poNumber]);
 }
 
-module.exports = { count, create, list, findByNumber };
+function updateStatus(poNumber, status, client = db) {
+  return client.query('UPDATE purchase_orders SET status = $1 WHERE po_number = $2 RETURNING *', [status, poNumber]);
+}
+
+module.exports = { count, create, list, findByNumber, updateStatus };

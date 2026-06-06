@@ -5,4 +5,9 @@ async function list(req, res) {
   res.json({ success: true, purchase_orders: result.rows });
 }
 
-module.exports = { list };
+async function updateStatus(req, res) {
+  const result = await purchaseOrderService.updateStatus(req.params.poNumber, req.body.status, req.user.id);
+  res.json({ success: true, purchase_order: result.rows[0] });
+}
+
+module.exports = { list, updateStatus };

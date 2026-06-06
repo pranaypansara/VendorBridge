@@ -15,4 +15,9 @@ async function update(req, res) {
   res.json({ success: true, vendor: result.rows[0] });
 }
 
-module.exports = { list, create, update };
+async function remove(req, res) {
+  const result = await vendorService.remove(req.params.id, req.user.id);
+  res.json({ success: true, message: `${result.rows[0].company_name} deleted successfully.` });
+}
+
+module.exports = { list, create, update, remove };

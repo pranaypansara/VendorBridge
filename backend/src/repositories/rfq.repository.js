@@ -66,4 +66,8 @@ function inviteVendor(client, rfqId, vendorId) {
   return client.query('INSERT INTO rfq_vendors (rfq_id, vendor_id) VALUES ($1, $2) ON CONFLICT DO NOTHING', [rfqId, vendorId]);
 }
 
-module.exports = { count, list, findById, listItems, listInvitedVendors, listQuotations, create, createItem, inviteVendor };
+function updateStatus(id, status, client = db) {
+  return client.query('UPDATE rfqs SET status = $1 WHERE id = $2 RETURNING *', [status, id]);
+}
+
+module.exports = { count, list, findById, listItems, listInvitedVendors, listQuotations, create, createItem, inviteVendor, updateStatus };

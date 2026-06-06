@@ -6,12 +6,23 @@ function count() {
 
 function listQueue() {
   return db.query(
-    `SELECT q.*, r.title AS rfq_title, v.company_name
-     FROM quotations q
+    `SELECT a.id,
+            a.quotation_id,
+            a.remarks,
+            a.status,
+            a.approved_at,
+            a.created_at,
+            u.first_name || ' ' || u.last_name AS approver_name,
+            q.total,
+            q.status AS quotation_status,
+            r.title AS rfq_title,
+            v.company_name
+     FROM approvals a
+     JOIN quotations q ON q.id = a.quotation_id
+     JOIN users u ON u.id = a.approver_id
      JOIN rfqs r ON r.id = q.rfq_id
      JOIN vendors v ON v.id = q.vendor_id
-     WHERE q.status IN ('Under Review', 'Approved', 'Rejected')
-     ORDER BY q.created_at DESC`
+     ORDER BY a.created_at DESC`
   );
 }
 

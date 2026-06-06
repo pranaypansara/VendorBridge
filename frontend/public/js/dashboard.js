@@ -175,15 +175,20 @@ function renderVendors() {
             <td>${escapeHtml(v.category)}</td>
             <td>${escapeHtml(v.gst_number)}</td>
             <td><span class="status-dot">${escapeHtml(v.status)}</span></td>
-          </tr>`, ['Vendor', 'Category', 'GST', 'Status'])}
+            <td class="row-actions">
+              <button class="mini-btn danger" data-vendor-delete="${v.id}" type="button">Delete</button>
+            </td>
+          </tr>`, ['Vendor', 'Category', 'GST', 'Status', 'Actions'])}
       </section>
     </section>
   `);
   document.getElementById('vendor-form').addEventListener('submit', submitVendor);
+  document.querySelectorAll('[data-vendor-delete]').forEach((button) => button.addEventListener('click', deleteVendor));
 }
 
 function renderRfqs() {
   const rows = filterRows(state.rfqs, ['title', 'category', 'status', 'creator_name']);
+  const statusOptions = ['Draft', 'Published', 'Under Evaluation', 'Completed', 'Cancelled'];
   workspace(`
     <div class="page-heading">
       <div><p class="eyebrow">RFQ Workspace</p><h1>${state.user.role === 'Vendor' ? 'Assigned RFQs' : 'Create and manage RFQs'}</h1></div>
@@ -198,11 +203,20 @@ function renderRfqs() {
             <td>${formatDate(r.deadline)}</td>
             <td>${escapeHtml(r.status)}</td>
             <td>${r.item_count || 0} items / ${r.quotation_count || 0} quotes</td>
-          </tr>`, ['RFQ', 'Deadline', 'Status', 'Coverage'])}
+            ${canManage() ? `
+            <td>
+              <select class="status-select" data-rfq-status="${r.id}">
+                ${statusOptions.map((s) => `<option value="${s}" ${s === r.status ? 'selected' : ''}>${s}</option>`).join('')}
+              </select>
+            </td>` : ''}
+          </tr>`, ['RFQ', 'Deadline', 'Status', 'Coverage'].concat(canManage() ? ['Update Status'] : []))}
       </div>
     </section>
   `);
-  if (canManage()) document.getElementById('rfq-form').addEventListener('submit', submitRfq);
+  if (canManage()) {
+    document.getElementById('rfq-form').addEventListener('submit', submitRfq);
+    document.querySelectorAll('[data-rfq-status]').forEach((select) => select.addEventListener('change', updateRfqStatus));
+  }
 }
 
 function renderQuotations() {
@@ -219,27 +233,41 @@ function renderQuotations() {
 }
 
 function renderApprovals() {
+  const pendingItems = state.approvals.filter((q) => q.quotation_status === 'Under Review');
+  const historyItems = state.approvals.filter((q) => q.quotation_status !== 'Under Review');
   workspace(`
     <div class="page-heading">
       <div><p class="eyebrow">Approvals Hub</p><h1>Manager approval workflow</h1></div>
     </div>
     <section class="panel">
-      ${renderRows(state.approvals, (q) => `
+      <div class="panel-title">Pending Decisions</div>
+      ${renderRows(pendingItems, (q) => `
         <tr>
           <td><strong>${escapeHtml(q.rfq_title)}</strong><span>${escapeHtml(q.company_name)}</span></td>
           <td>${money(q.total)}</td>
-          <td>${escapeHtml(q.status)}</td>
           <td class="row-actions">
-            <button class="mini-btn" data-approve="${q.id}" data-status="Approved" type="button">Approve</button>
-            <button class="mini-btn danger" data-approve="${q.id}" data-status="Rejected" type="button">Reject</button>
+            <button class="mini-btn" data-approve="${q.quotation_id}" data-status="Approved" type="button">Approve</button>
+            <button class="mini-btn danger" data-approve="${q.quotation_id}" data-status="Rejected" type="button">Reject</button>
           </td>
-        </tr>`, ['Quotation', 'Total', 'Status', 'Action'])}
+        </tr>`, ['Quotation', 'Total', 'Action'])}
+    </section>
+    <section class="panel">
+      <div class="panel-title">Approval History</div>
+      ${renderRows(historyItems, (q) => `
+        <tr>
+          <td><strong>${escapeHtml(q.rfq_title)}</strong><span>${escapeHtml(q.company_name)}</span></td>
+          <td>${money(q.total)}</td>
+          <td>${escapeHtml(q.quotation_status)}</td>
+          <td>${escapeHtml(q.approver_name || '-')}</td>
+          <td>${formatDate(q.approved_at) || '-'}</td>
+        </tr>`, ['Quotation', 'Total', 'Status', 'Approver', 'Decided At'])}
     </section>
   `);
   document.querySelectorAll('[data-approve]').forEach((button) => button.addEventListener('click', submitApproval));
 }
 
 function renderPurchaseOrders() {
+  const poStatusOptions = ['Issued', 'Accepted', 'Completed', 'Cancelled'];
   workspace(`
     <div class="page-heading">
       <div><p class="eyebrow">Purchase Orders</p><h1>Approved procurement commitments</h1></div>
@@ -251,12 +279,26 @@ function renderPurchaseOrders() {
           <td>${escapeHtml(po.company_name)}</td>
           <td>${money(po.amount)}</td>
           <td>${escapeHtml(po.status)}</td>
-        </tr>`, ['PO Number', 'Vendor', 'Amount', 'Status'])}
+          <td>
+            <select class="status-select" data-po-status="${po.po_number}">
+              ${poStatusOptions.map((s) => `<option value="${s}" ${s === po.status ? 'selected' : ''}>${s}</option>`).join('')}
+            </select>
+          </td>
+        </tr>`, ['PO Number', 'Vendor', 'Amount', 'Status', 'Update'])}
     </section>
   `);
+  document.querySelectorAll('[data-po-status]').forEach((select) => select.addEventListener('change', updatePoStatus));
+}
+
+async function updatePoStatus(event) {
+  const poNumber = event.target.dataset.poStatus;
+  const status = event.target.value;
+  await submitJson(`/api/purchase-orders/${encodeURIComponent(poNumber)}/status`, { status }, `PO ${poNumber} status updated to ${status}.`);
+  await loadModule('purchase-orders');
 }
 
 function renderInvoices() {
+  const invStatusOptions = ['Draft', 'Sent', 'Paid', 'Overdue', 'Void'];
   workspace(`
     <div class="page-heading">
       <div><p class="eyebrow">Invoices</p><h1>Generate, print, and email invoices</h1></div>
@@ -274,17 +316,31 @@ function renderInvoices() {
             <td><strong>${escapeHtml(invoice.invoice_number)}</strong><span>${escapeHtml(invoice.company_name)}</span></td>
             <td>${escapeHtml(invoice.purchase_order_id)}</td>
             <td>${money(invoice.grand_total)}</td>
+            <td>${escapeHtml(invoice.status)}</td>
+            <td>
+              <select class="status-select" data-inv-status="${invoice.invoice_number}">
+                ${invStatusOptions.map((s) => `<option value="${s}" ${s === invoice.status ? 'selected' : ''}>${s}</option>`).join('')}
+              </select>
+            </td>
             <td class="row-actions">
               <button class="mini-btn" data-print="${invoice.invoice_number}" type="button">Print PDF</button>
               <button class="mini-btn" data-email="${invoice.invoice_number}" type="button">Email</button>
             </td>
-          </tr>`, ['Invoice', 'PO', 'Total', 'Actions'])}
+          </tr>`, ['Invoice', 'PO', 'Total', 'Status', 'Update', 'Actions'])}
       </div>
     </section>
   `);
   document.getElementById('invoice-form').addEventListener('submit', submitInvoice);
   document.querySelectorAll('[data-print]').forEach((button) => button.addEventListener('click', () => window.print()));
   document.querySelectorAll('[data-email]').forEach((button) => button.addEventListener('click', emailInvoice));
+  document.querySelectorAll('[data-inv-status]').forEach((select) => select.addEventListener('change', updateInvoiceStatus));
+}
+
+async function updateInvoiceStatus(event) {
+  const invNumber = event.target.dataset.invStatus;
+  const status = event.target.value;
+  await submitJson(`/api/invoices/${encodeURIComponent(invNumber)}/status`, { status }, `Invoice ${invNumber} status updated to ${status}.`);
+  await loadModule('invoices');
 }
 
 function renderReports() {
@@ -367,12 +423,27 @@ async function submitVendor(event) {
   await loadModule('vendors');
 }
 
+async function deleteVendor(event) {
+  const id = event.target.dataset.vendorDelete;
+  if (!confirm('Are you sure you want to delete this vendor?')) return;
+  await api(`/api/vendors/${id}`, { method: 'DELETE' });
+  showAlert('success', 'Vendor deleted.');
+  await loadModule('vendors');
+}
+
 async function submitRfq(event) {
   event.preventDefault();
   const data = formData(event.target);
   data.items = parseLines(data.items, ['item_name', 'quantity']);
   data.vendor_ids = Array.from(event.target.vendor_ids.selectedOptions).map((option) => Number(option.value));
   await submitJson('/api/rfqs', data, 'RFQ created and vendors notified.');
+  await loadModule('rfqs');
+}
+
+async function updateRfqStatus(event) {
+  const rfqId = event.target.dataset.rfqStatus;
+  const status = event.target.value;
+  await submitJson(`/api/rfqs/${rfqId}/status`, { status }, `RFQ status updated to ${status}.`);
   await loadModule('rfqs');
 }
 

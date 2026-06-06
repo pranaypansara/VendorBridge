@@ -15,4 +15,9 @@ async function create(req, res) {
   res.status(201).json({ success: true, rfq });
 }
 
-module.exports = { list, details, create };
+async function updateStatus(req, res) {
+  const rfq = await rfqService.updateStatus(req.params.id, req.body.status, req.user.id);
+  res.json({ success: true, rfq });
+}
+
+module.exports = { list, details, create, updateStatus };

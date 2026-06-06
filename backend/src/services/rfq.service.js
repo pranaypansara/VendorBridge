@@ -72,4 +72,22 @@ async function create(payload, user) {
   }
 }
 
-module.exports = { list, details, create };
+async function updateStatus(id, status, userId) {
+  const allowedStatuses = ['Draft', 'Published', 'Under Evaluation', 'Completed', 'Cancelled'];
+  if (!allowedStatuses.includes(status)) {
+    const error = new Error(`Invalid status. Allowed: ${allowedStatuses.join(', ')}`);
+    error.status = 400;
+    throw error;
+  }
+
+  const result = await rfqRepository.updateStatus(id, status);
+  if (!result.rows.length) {
+    const error = new Error('RFQ not found.');
+    error.status = 404;
+    throw error;
+  }
+  await activityLogRepository.create(userId, 'RFQ Updated', `RFQ "${result.rows[0].title}" status changed to ${status}.`);
+  return result.rows[0];
+}
+
+module.exports = { list, details, create, updateStatus };

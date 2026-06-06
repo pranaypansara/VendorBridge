@@ -15,4 +15,9 @@ async function email(req, res) {
   res.json({ success: true, message: result.message });
 }
 
-module.exports = { list, generate, email };
+async function updateStatus(req, res) {
+  const result = await invoiceService.updateStatus(req.params.invoiceNumber, req.body.status, req.user.id);
+  res.json({ success: true, invoice: result.rows[0] });
+}
+
+module.exports = { list, generate, email, updateStatus };

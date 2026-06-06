@@ -7,7 +7,7 @@ function count() {
 function create(invoice) {
   return db.query(
     `INSERT INTO invoices (invoice_number, purchase_order_id, subtotal, cgst, sgst, grand_total, status)
-     VALUES ($1, $2, $3, $4, $5, $6, 'Sent')
+     VALUES ($1, $2, $3, $4, $5, $6, 'Draft')
      RETURNING *`,
     [invoice.invoice_number, invoice.purchase_order_id, invoice.subtotal, invoice.cgst, invoice.sgst, invoice.grand_total]
   );
@@ -23,4 +23,12 @@ function list() {
   );
 }
 
-module.exports = { count, create, list };
+function updateStatus(invoiceNumber, status) {
+  return db.query('UPDATE invoices SET status = $1 WHERE invoice_number = $2 RETURNING *', [status, invoiceNumber]);
+}
+
+function findByNumber(invoiceNumber) {
+  return db.query('SELECT * FROM invoices WHERE invoice_number = $1', [invoiceNumber]);
+}
+
+module.exports = { count, create, list, updateStatus, findByNumber };

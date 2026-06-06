@@ -18,8 +18,9 @@ async function login(req, res) {
   res.json({ success: true, message: 'Login successful!', user: result.user });
 }
 
-function me(req, res) {
-  res.json({ success: true, user: req.user });
+async function me(req, res) {
+  const user = await authService.me(req.user.id);
+  res.json({ success: true, user });
 }
 
 function logout(req, res) {

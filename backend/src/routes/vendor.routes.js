@@ -10,5 +10,6 @@ const manageVendors = [authenticateToken, requireRoles('Admin', 'Procurement Off
 router.get('/', ...manageVendors, asyncHandler(vendorController.list));
 router.post('/', ...manageVendors, asyncHandler(vendorController.create));
 router.patch('/:id', ...manageVendors, asyncHandler(vendorController.update));
+router.delete('/:id', ...manageVendors, asyncHandler(vendorController.remove));
 
 module.exports = router;

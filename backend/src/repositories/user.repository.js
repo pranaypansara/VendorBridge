@@ -17,4 +17,8 @@ function findManagers() {
   return db.query("SELECT id FROM users WHERE role = 'Manager'");
 }
 
-module.exports = { findByEmail, create, findManagers };
+function findById(id) {
+  return db.query('SELECT id, first_name, last_name, email, phone, role, created_at FROM users WHERE id = $1', [id]);
+}
+
+module.exports = { findByEmail, create, findManagers, findById };

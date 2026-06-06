@@ -73,18 +73,33 @@ function compare(rfqId) {
 }
 
 async function select(id, userId) {
-  const quote = await quotationRepository.updateStatus(id, 'Under Review');
-  if (!quote.rows.length) {
-    const error = new Error('Quotation not found.');
-    error.status = 404;
+  const client = await db.pool.connect();
+  try {
+    await client.query('BEGIN');
+    const quote = await quotationRepository.updateStatus(id, 'Under Review', client);
+    if (!quote.rows.length) {
+      await client.query('ROLLBACK');
+      const error = new Error('Quotation not found.');
+      error.status = 404;
+      throw error;
+    }
+    const managers = await userRepository.findManagers();
+    for (const manager of managers.rows) {
+      await notificationRepository.create(manager.id, `Quotation #${id} is ready for approval.`, 'Approval Required', client);
+    }
+    await activityLogRepository.create(userId, 'Quotation Selected', `Quotation #${id} was selected for manager approval.`, client);
+    const vendorUser = await vendorRepository.findUserForVendor(quote.rows[0].vendor_id, client);
+    if (vendorUser.rows[0]) {
+      await notificationRepository.create(vendorUser.rows[0].id, `Your quotation #${id} has been selected for manager review.`, 'Quotation Selected', client);
+    }
+    await client.query('COMMIT');
+    return quote;
+  } catch (error) {
+    await client.query('ROLLBACK');
     throw error;
+  } finally {
+    client.release();
   }
-  const managers = await userRepository.findManagers();
-  for (const manager of managers.rows) {
-    await notificationRepository.create(manager.id, `Quotation #${id} is ready for approval.`, 'Approval Required');
-  }
-  await activityLogRepository.create(userId, 'Quotation Selected', `Quotation #${id} was selected for manager approval.`);
-  return quote;
 }
 
 module.exports = { submit, compare, select };

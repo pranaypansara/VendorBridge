@@ -9,6 +9,7 @@ const router = express.Router();
 const procurementOnly = [authenticateToken, requireRoles('Admin', 'Procurement Officer')];
 
 router.get('/', ...procurementOnly, asyncHandler(purchaseOrderController.list));
+router.patch('/:poNumber/status', ...procurementOnly, asyncHandler(purchaseOrderController.updateStatus));
 router.post('/:poNumber/invoices', ...procurementOnly, asyncHandler(invoiceController.generate));
 
 module.exports = router;

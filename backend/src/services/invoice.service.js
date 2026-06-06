@@ -36,4 +36,21 @@ async function email(invoiceNumber, userId) {
   return { message: 'Invoice email queued. Configure SMTP for live delivery.' };
 }
 
-module.exports = { list, generate, email };
+async function updateStatus(invoiceNumber, status, userId) {
+  const allowedStatuses = ['Draft', 'Sent', 'Paid', 'Overdue', 'Void'];
+  if (!allowedStatuses.includes(status)) {
+    const error = new Error(`Invalid invoice status. Allowed: ${allowedStatuses.join(', ')}`);
+    error.status = 400;
+    throw error;
+  }
+  const result = await invoiceRepository.updateStatus(invoiceNumber, status);
+  if (!result.rows.length) {
+    const error = new Error('Invoice not found.');
+    error.status = 404;
+    throw error;
+  }
+  await activityLogRepository.create(userId, 'Invoice Updated', `${invoiceNumber} status changed to ${status}.`);
+  return result;
+}
+
+module.exports = { list, generate, email, updateStatus };
