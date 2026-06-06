@@ -21,7 +21,7 @@ async function generate(poNumber, userId) {
   const sgst = subtotal * 0.09;
   const result = await invoiceRepository.create({
     invoice_number: invoiceNumber(),
-    purchase_order_id: poNumber,
+    purchase_order_id: po.rows[0].id,
     subtotal,
     cgst,
     sgst,
@@ -36,21 +36,25 @@ async function email(invoiceNumber, userId) {
   return { message: 'Invoice email queued. Configure SMTP for live delivery.' };
 }
 
-async function updateStatus(invoiceNumber, status, userId) {
+async function findByNumber(invoiceNumber) {
+  return invoiceRepository.findByNumber(invoiceNumber);
+}
+
+async function updateStatus(invoiceId, status, userId) {
   const allowedStatuses = ['Draft', 'Sent', 'Paid', 'Overdue', 'Void'];
   if (!allowedStatuses.includes(status)) {
     const error = new Error(`Invalid invoice status. Allowed: ${allowedStatuses.join(', ')}`);
     error.status = 400;
     throw error;
   }
-  const result = await invoiceRepository.updateStatus(invoiceNumber, status);
+  const result = await invoiceRepository.updateStatus(invoiceId, status);
   if (!result.rows.length) {
     const error = new Error('Invoice not found.');
     error.status = 404;
     throw error;
   }
-  await activityLogRepository.create(userId, 'Invoice Updated', `${invoiceNumber} status changed to ${status}.`);
+  await activityLogRepository.create(userId, 'Invoice Updated', `${result.rows[0].invoice_number} status changed to ${status}.`);
   return result;
 }
 
-module.exports = { list, generate, email, updateStatus };
+module.exports = { list, generate, email, updateStatus, findByNumber };

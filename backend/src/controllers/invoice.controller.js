@@ -16,7 +16,11 @@ async function email(req, res) {
 }
 
 async function updateStatus(req, res) {
-  const result = await invoiceService.updateStatus(req.params.invoiceNumber, req.body.status, req.user.id);
+  const invoice = await invoiceService.findByNumber(req.params.invoiceNumber);
+  if (!invoice.rows.length) {
+    return res.status(404).json({ success: false, message: 'Invoice not found.' });
+  }
+  const result = await invoiceService.updateStatus(invoice.rows[0].id, req.body.status, req.user.id);
   res.json({ success: true, invoice: result.rows[0] });
 }
 

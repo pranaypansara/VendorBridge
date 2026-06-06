@@ -8,8 +8,8 @@ function list() {
   return db.query('SELECT * FROM vendors ORDER BY created_at DESC, id DESC');
 }
 
-function create(vendor, client = db) {
-  return client.query(
+function create(vendor) {
+  return db.query(
     `INSERT INTO vendors (company_name, gst_number, category, contact_person, email, phone, status)
      VALUES ($1, $2, $3, $4, $5, $6, $7)
      RETURNING *`,
@@ -26,7 +26,8 @@ function update(id, vendor, client = db) {
          contact_person = COALESCE($4, contact_person),
          email = COALESCE($5, email),
          phone = COALESCE($6, phone),
-         status = COALESCE($7, status)
+         status = COALESCE($7, status),
+         updated_at = NOW()
      WHERE id = $8
      RETURNING *`,
     [vendor.company_name, vendor.gst_number, vendor.category, vendor.contact_person, vendor.email, vendor.phone, vendor.status, id]

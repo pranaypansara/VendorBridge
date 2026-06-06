@@ -17,18 +17,22 @@ function list() {
   return db.query(
     `SELECT i.*, po.vendor_id, v.company_name
      FROM invoices i
-     JOIN purchase_orders po ON po.po_number = i.purchase_order_id
+     JOIN purchase_orders po ON po.id = i.purchase_order_id
      JOIN vendors v ON v.id = po.vendor_id
      ORDER BY i.created_at DESC`
   );
 }
 
-function updateStatus(invoiceNumber, status) {
-  return db.query('UPDATE invoices SET status = $1 WHERE invoice_number = $2 RETURNING *', [status, invoiceNumber]);
+function updateStatus(id, status) {
+  return db.query('UPDATE invoices SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING *', [status, id]);
 }
 
 function findByNumber(invoiceNumber) {
   return db.query('SELECT * FROM invoices WHERE invoice_number = $1', [invoiceNumber]);
 }
 
-module.exports = { count, create, list, updateStatus, findByNumber };
+function findById(id) {
+  return db.query('SELECT * FROM invoices WHERE id = $1', [id]);
+}
+
+module.exports = { count, create, list, updateStatus, findByNumber, findById };

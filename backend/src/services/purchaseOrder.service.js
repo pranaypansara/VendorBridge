@@ -5,6 +5,10 @@ function list() {
   return purchaseOrderRepository.list();
 }
 
+async function findByNumber(poNumber) {
+  return purchaseOrderRepository.findByNumber(poNumber);
+}
+
 async function updateStatus(poNumber, status, userId) {
   const allowedStatuses = ['Issued', 'Accepted', 'Completed', 'Cancelled'];
   if (!allowedStatuses.includes(status)) {
@@ -12,7 +16,13 @@ async function updateStatus(poNumber, status, userId) {
     error.status = 400;
     throw error;
   }
-  const result = await purchaseOrderRepository.updateStatus(poNumber, status);
+  const po = await purchaseOrderRepository.findByNumber(poNumber);
+  if (!po.rows.length) {
+    const error = new Error('Purchase order not found.');
+    error.status = 404;
+    throw error;
+  }
+  const result = await purchaseOrderRepository.updateStatus(po.rows[0].id, status);
   if (!result.rows.length) {
     const error = new Error('Purchase order not found.');
     error.status = 404;
@@ -22,4 +32,4 @@ async function updateStatus(poNumber, status, userId) {
   return result;
 }
 
-module.exports = { list, updateStatus };
+module.exports = { list, updateStatus, findByNumber };

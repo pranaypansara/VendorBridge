@@ -144,7 +144,7 @@ function renderDashboard() {
     <section class="panel">
       <div class="panel-title">Recent Activity</div>
       ${renderRows(activity, (log) => `
-        <tr><td>${escapeHtml(log.action)}</td><td>${escapeHtml(log.details || '')}</td><td>${formatDate(log.created_at)}</td></tr>
+        <tr><td>${escapeHtml(log.action)}</td><td>${escapeHtml(log.description || '')}</td><td>${formatDate(log.created_at)}</td></tr>
       `, ['Action', 'Details', 'Time'])}
     </section>
   `);
@@ -374,7 +374,7 @@ function renderActivity() {
     </div>
     <section class="panel">
       ${renderRows(state.logs, (log) => `
-        <tr><td>${escapeHtml(log.action)}</td><td>${escapeHtml(log.details || '')}</td><td>${escapeHtml(`${log.first_name || 'System'} ${log.last_name || ''}`)}</td><td>${formatDate(log.created_at)}</td></tr>
+        <tr><td>${escapeHtml(log.action)}</td><td>${escapeHtml(log.description || '')}</td><td>${escapeHtml(`${log.first_name || 'System'} ${log.last_name || ''}`)}</td><td>${formatDate(log.created_at)}</td></tr>
       `, ['Action', 'Details', 'User', 'Time'])}
     </section>
   `);
@@ -435,7 +435,7 @@ async function submitRfq(event) {
   event.preventDefault();
   const data = formData(event.target);
   data.items = parseLines(data.items, ['item_name', 'quantity']);
-  data.vendor_ids = Array.from(event.target.vendor_ids.selectedOptions).map((option) => Number(option.value));
+  data.vendor_ids = Array.from(event.target.vendor_ids.selectedOptions).map((option) => option.value);
   await submitJson('/api/rfqs', data, 'RFQ created and vendors notified.');
   await loadModule('rfqs');
 }
@@ -478,7 +478,7 @@ async function selectQuote(event) {
 
 async function submitApproval(event) {
   await submitJson('/api/approvals', {
-    quotation_id: Number(event.target.dataset.approve),
+    quotation_id: event.target.dataset.approve,
     status: event.target.dataset.status,
     remarks: `${event.target.dataset.status} from approval hub`
   }, `Quotation ${event.target.dataset.status.toLowerCase()}.`);

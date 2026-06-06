@@ -9,7 +9,7 @@ function categorySpend() {
 }
 
 function topVendors() {
-  return db.query(`SELECT v.company_name, COUNT(po.po_number)::int AS orders, COALESCE(SUM(po.amount), 0)::numeric AS spend FROM vendors v LEFT JOIN purchase_orders po ON po.vendor_id = v.id GROUP BY v.id ORDER BY spend DESC LIMIT 8`);
+  return db.query(`SELECT v.company_name, COUNT(po.id)::int AS orders, COALESCE(SUM(po.amount), 0)::numeric AS spend FROM vendors v LEFT JOIN purchase_orders po ON po.vendor_id = v.id GROUP BY v.id ORDER BY spend DESC LIMIT 8`);
 }
 
 module.exports = { monthlySpend, categorySpend, topVendors };

@@ -28,8 +28,12 @@ function findByNumber(poNumber) {
   return db.query('SELECT * FROM purchase_orders WHERE po_number = $1', [poNumber]);
 }
 
-function updateStatus(poNumber, status, client = db) {
-  return client.query('UPDATE purchase_orders SET status = $1 WHERE po_number = $2 RETURNING *', [status, poNumber]);
+function findById(id) {
+  return db.query('SELECT * FROM purchase_orders WHERE id = $1', [id]);
 }
 
-module.exports = { count, create, list, findByNumber, updateStatus };
+function updateStatus(id, status, client = db) {
+  return client.query('UPDATE purchase_orders SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING *', [status, id]);
+}
+
+module.exports = { count, create, list, findByNumber, findById, updateStatus };

@@ -48,13 +48,14 @@ async function decide(payload, userId) {
 
     if (status === 'Approved') {
       const number = poNumber();
-      await purchaseOrderRepository.create(client, {
+      const poResult = await purchaseOrderRepository.create(client, {
         po_number: number,
         quotation_id: quote.rows[0].id,
         vendor_id: quote.rows[0].vendor_id,
         amount: quote.rows[0].total
       });
-      await quotationRepository.copyItemsToPurchaseOrder(client, number, quotation_id);
+      const purchaseOrderId = poResult.rows[0].id;
+      await quotationRepository.copyItemsToPurchaseOrder(client, purchaseOrderId, quotation_id);
       await activityLogRepository.create(userId, 'PO Generated', `${number} was generated from quotation #${quotation_id}.`, client);
       if (vendorUserId) {
         await notificationRepository.create(vendorUserId, `Purchase Order ${number} has been generated for your approved quotation.`, 'PO Generated', client);

@@ -59,7 +59,7 @@ function create(client, rfq) {
 }
 
 function createItem(client, rfqId, item) {
-  return client.query('INSERT INTO rfq_items (rfq_id, item_name, quantity) VALUES ($1, $2, $3)', [rfqId, item.item_name, item.quantity]);
+  return client.query('INSERT INTO rfq_items (rfq_id, item_name, quantity, unit) VALUES ($1, $2, $3, $4)', [rfqId, item.item_name, item.quantity, item.unit || null]);
 }
 
 function inviteVendor(client, rfqId, vendorId) {
@@ -67,7 +67,7 @@ function inviteVendor(client, rfqId, vendorId) {
 }
 
 function updateStatus(id, status, client = db) {
-  return client.query('UPDATE rfqs SET status = $1 WHERE id = $2 RETURNING *', [status, id]);
+  return client.query('UPDATE rfqs SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING *', [status, id]);
 }
 
 module.exports = { count, list, findById, listItems, listInvitedVendors, listQuotations, create, createItem, inviteVendor, updateStatus };

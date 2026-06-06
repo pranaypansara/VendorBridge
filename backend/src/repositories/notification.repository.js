@@ -1,8 +1,8 @@
 const db = require('../config/db');
 
-function create(userId, message, type, client = db) {
+function create(userId, message, title, client = db) {
   if (!userId) return Promise.resolve();
-  return client.query('INSERT INTO notifications (user_id, message, type) VALUES ($1, $2, $3)', [userId, message, type]);
+  return client.query('INSERT INTO notifications (user_id, message, title) VALUES ($1, $2, $3)', [userId, message, title]);
 }
 
 function listByUser(userId) {

@@ -40,14 +40,14 @@ function findById(id) {
 }
 
 function updateStatus(id, status, client = db) {
-  return client.query('UPDATE quotations SET status = $1 WHERE id = $2 RETURNING *', [status, id]);
+  return client.query('UPDATE quotations SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING *', [status, id]);
 }
 
-function copyItemsToPurchaseOrder(client, poNumber, quotationId) {
+function copyItemsToPurchaseOrder(client, purchaseOrderId, quotationId) {
   return client.query(
     `INSERT INTO purchase_order_items (purchase_order_id, item_name, quantity, unit_price, total_price)
      SELECT $1, item_name, quantity, unit_price, total_price FROM quotation_items WHERE quotation_id = $2`,
-    [poNumber, quotationId]
+    [purchaseOrderId, quotationId]
   );
 }
 
