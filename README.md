@@ -144,8 +144,6 @@ Quotation submission and RFQ participation.
 
 ## Running Locally
 
-### Frontend
-
 ```bash
 npm run dev
 or
