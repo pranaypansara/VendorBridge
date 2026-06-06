@@ -147,17 +147,9 @@ Quotation submission and RFQ participation.
 ### Frontend
 
 ```bash
-cd frontend
-npm install
 npm run dev
-```
-
-### Backend
-
-```bash
-cd backend
-npm install
-npm run dev
+or
+npm start
 ```
 
 ### Environment Variables
