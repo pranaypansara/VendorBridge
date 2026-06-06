@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VendorBridge - Enterprise Dashboard</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Loading spinner before details are filled -->
+  <div id="loading-screen" class="loading-overlay">
+    <div class="spinner"></div>
+  </div>
+
+  <div class="dash-wrapper">
+    <!-- Navbar Header -->
+    <header class="dash-header">
+      <a href="/dashboard.html" class="brand">
+        <div class="brand-icon">&gt;_</div>
+        VendorBridge
+      </a>
+      
+      <div class="user-menu">
+        <div class="user-badge">
+          <div id="user-avatar" class="avatar-init">VB</div>
+          <div class="user-details">
+            <span id="user-display-name" class="user-name">Loading User...</span>
+            <span id="user-display-role" class="user-role">Role Loading...</span>
+          </div>
+        </div>
+        <button id="logout-btn" class="btn-outline">Log Out</button>
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="dash-main">
+      <div class="welcome-banner">
+        <h2 id="welcome-message" class="welcome-title">Welcome to the Procurement Hub</h2>
+        <p id="welcome-description" class="welcome-desc">
+          Connecting your supply chain ecosystem with database verification and role management.
+        </p>
+      </div>
+
+      <!-- Dashboard Grid -->
+      <div class="grid-cards">
+        
+        <!-- User Session Card -->
+        <div class="summary-card">
+          <div class="summary-header">
+            👤 User Session Details
+          </div>
+          <div style="font-size: 0.9rem; display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+            <div><strong>First Name:</strong> <span id="sess-first-name" class="text-secondary">-</span></div>
+            <div><strong>Last Name:</strong> <span id="sess-last-name" class="text-secondary">-</span></div>
+            <div><strong>Email:</strong> <span id="sess-email" class="text-secondary">-</span></div>
+            <div><strong>Phone Number:</strong> <span id="sess-phone" class="text-secondary">-</span></div>
+            <div><strong>User ID:</strong> <span id="sess-id" class="text-secondary">-</span></div>
+          </div>
+          <span class="badge-info">Session Verified</span>
+        </div>
+
+        <!-- System Architecture Card -->
+        <div class="summary-card">
+          <div class="summary-header">
+            🔌 Database Connectivity
+          </div>
+          <div id="db-status-detail" style="font-size: 0.9rem; display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+            <div><strong>Neon PG Status:</strong> <span id="db-conn-indicator" style="color: #ef4444; font-weight: 600;">Checking...</span></div>
+            <div><strong>Architecture:</strong> <span class="text-secondary">Neon PostgreSQL Serverless</span></div>
+            <div><strong>SSL Configuration:</strong> <span class="text-secondary">SSLMode Required (rejectUnauthorized: false)</span></div>
+          </div>
+          <span id="db-conn-badge" class="badge-info" style="background-color: rgba(239, 68, 68, 0.1); color: #f87171;">Connecting</span>
+        </div>
+
+        <!-- Schema Preparedness Audit Card -->
+        <div class="summary-card" style="grid-column: span 1;">
+          <div class="summary-header">
+            📂 Schema Readiness (Phase 0 Audit)
+          </div>
+          <div style="font-size: 0.8rem; line-height: 1.4; display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.5rem; max-height: 150px; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-muted); padding-bottom: 2px;">
+              <span>users table</span> <span style="color: #4ade80;">Active (Phase 0)</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-muted); padding-bottom: 2px;">
+              <span>vendors & rfqs tables</span> <span class="text-secondary">Pending Phase 1</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-muted); padding-bottom: 2px;">
+              <span>quotations & approvals</span> <span class="text-secondary">Pending Phase 2</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-muted); padding-bottom: 2px;">
+              <span>purchase_orders & invoices</span> <span class="text-secondary">Pending Phase 3</span>
+            </div>
+          </div>
+          <span class="badge-info" style="background-color: rgba(59, 130, 246, 0.1); color: #60a5fa;">Structure Readied</span>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>
